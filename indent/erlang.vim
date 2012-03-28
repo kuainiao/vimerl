@@ -7,6 +7,7 @@
 if exists('b:did_indent')
 	finish
 else
+	finish " doesn't work on Windows
 	let b:did_indent = 1
 endif
 

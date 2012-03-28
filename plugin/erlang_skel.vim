@@ -49,6 +49,7 @@ function s:SubstituteField(name, value)
 	execute '%substitute/\$' . toupper(a:name) . '/' . a:value . '/'
 endfunction
 
+command ErlangModule      silent call s:LoadSkeleton('module')
 command ErlangApplication silent call s:LoadSkeleton('application')
 command ErlangSupervisor  silent call s:LoadSkeleton('supervisor')
 command ErlangGenServer   silent call s:LoadSkeleton('gen_server')
