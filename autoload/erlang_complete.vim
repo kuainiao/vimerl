@@ -10,6 +10,10 @@
 " Completion program path
 let s:erlang_complete_file = expand('<sfile>:p:h') . '/erlang_complete.erl'
 
+let s:erlang_complete_cache_file = expand('<sfile>:p:h') . '/erlang_index'
+let s:erlang_cache_load = 0
+let s:modules_name_key = 'module'
+let s:modules_name_cache = {}
 if !exists('g:erlang_completion_cache')
 	let g:erlang_completion_cache = 1
 endif
@@ -24,6 +28,11 @@ let s:erlang_blank_line        = '^\s*\(%.*\)\?$'
 
 " Main function for completion
 function erlang_complete#Complete(findstart, base)
+	if s:erlang_cache_load == 0
+		call s:ErlangLoadCache(a:base)
+		let s:erlang_cache_load = 1
+	endif
+
 	let lnum = line('.')
 	let column = col('.')
 	let line = strpart(getline('.'), 0, column - 1)
@@ -131,6 +140,16 @@ function s:ErlangFindExternalFunc(module, base)
 		endif
 	endfor
 
+	let func_lists = s:modules_cache[a:module]
+	if len(func_lists) > 0
+		let tmp_cache = {a:module : func_lists}
+		" write cache to file
+		exe "redir! >> " . s:erlang_complete_cache_file
+		silent echon tmp_cache
+		silent echon "\n"
+		redir END
+	endif
+
 	return []
 endfunction
 
@@ -154,5 +173,54 @@ function s:ErlangFindLocalFunc(base)
 		let lnum = s:ErlangFindNextNonBlank(lnum)
 	endwhile
 
+	" Always check BIF and Module
+	call s:ErlangFindModule(a:base)
+	call s:ErlangFindBIF(a:base)
+
 	return []
 endfunction
+
+function s:ErlangLoadCache(base)
+	let s:modules_cache[s:modules_name_key] = []
+
+	if filereadable(s:erlang_complete_cache_file)
+		for line in readfile(s:erlang_complete_cache_file)
+			let cache = eval(line)
+			for key in keys(cache)
+				" add cached module name in the case
+				let field = {'word': key . '(', 'abbr': key . ' -> MODULE',
+							\  'kind': 'm', 'dup': 1} " use 'm' just to distinguish from function
+				let fields_cache = get(s:modules_cache, s:modules_name_key)
+				let s:modules_cache[s:modules_name_key] = add(fields_cache, field)
+			endfor
+		endfor
+	endif
+	
+	return []
+endfunction
+
+" Match BIFs
+function s:ErlangFindBIF(base)
+	if has_key(s:modules_cache, 'erlang')
+		for field_cache in get(s:modules_cache, 'erlang')
+			if match(field_cache.word, a:base) == 0
+				call complete_add(field_cache)
+			endif
+		endfor
+
+		return []
+	endif
+endfunction
+
+" Match module name
+function s:ErlangFindModule(base)
+	if has_key(s:modules_cache, s:modules_name_key)
+		for field_cache in get(s:modules_cache, s:modules_name_key)
+			if match(field_cache.word, a:base) == 0
+				call complete_add(field_cache)
+			endif
+		endfor
+
+		return []
+	endif
+endfunctio
