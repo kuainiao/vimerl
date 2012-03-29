@@ -110,10 +110,6 @@ function s:ErlangFindExternalFunc(module, base)
 		return []
 	endif
 
-	let find_command = 'find ' . g:erlang_man_path . ' -name ' . a:module . '.?'
-	let file_path = system(find_command)
-	let file_path = file_path[:-2]
-
 	let functions = system("escript.exe " . s:erlang_complete_file . ' ' . a:module)
 	" let functions = system(s:erlang_complete_file . ' ' . a:module)
 	for function_spec in split(functions, '\n')
