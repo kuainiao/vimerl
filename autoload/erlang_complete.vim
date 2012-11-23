@@ -189,10 +189,15 @@ function s:ErlangLoadCache(base)
 			let cache = eval(line)
 			for key in keys(cache)
 				" add cached module name in the case
-				let field = {'word': key . '(', 'abbr': key . ' -> MODULE',
-							\  'kind': 'm', 'dup': 1} " use 'm' just to distinguish from function
-				let fields_cache = get(s:modules_cache, s:modules_name_key)
-				let s:modules_cache[s:modules_name_key] = add(fields_cache, field)
+				" use 'm' just to distinguish from function
+				let module_field = {'word': key . '(', 'abbr': key .
+						\' -> MODULE', 'kind': 'm', 'dup': 1}
+				let module_fields_cache = get(s:modules_cache, s:modules_name_key)
+				let s:modules_cache[s:modules_name_key] = add(module_fields_cache, module_field)
+
+				" add module function list to the cache
+				let function_list = get(cache, key)
+				let s:modules_cache[key] = function_list
 			endfor
 		endfor
 	endif
