@@ -13,7 +13,7 @@ let s:erlang_complete_file = expand('<sfile>:p:h') . '/erlang_complete.erl'
 let s:erlang_complete_cache_file = expand('<sfile>:p:h') . '/erlang_index'
 let s:erlang_cache_load = 0
 let s:modules_name_key = 'module'
-let s:modules_name_cache = {}
+
 if !exists('g:erlang_completion_cache')
 	let g:erlang_completion_cache = 1
 endif
