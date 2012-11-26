@@ -141,17 +141,7 @@ function s:ErlangFindExternalFunc(module, base)
 		endif
 	endfor
 
-	let func_lists = s:modules_cache[a:module]
-	if len(func_lists) > 0
-		let tmp_cache = {a:module : func_lists}
-		" write cache to file
-		exe "redir! >> " . s:erlang_complete_cache_file
-		silent echon tmp_cache
-		silent echon "\n"
-		redir END
-	endif
-
-	return []
+    call s:WriteCache(a:module)
 endfunction
 
 " Find local function names
@@ -230,3 +220,36 @@ function s:ErlangFindModule(base)
 		return []
 	endif
 endfunctio
+
+function s:WriteCache(module)
+    let function_list = s:modules_cache[a:module]
+    if len(function_list) > 0
+		let tmp_cache = {a:module : function_list}
+		" write cache to file
+		exe "redir >> " . s:erlang_complete_cache_file
+		silent echon tmp_cache
+		silent echon "\n"
+		redir END
+	endif
+endfunction
+
+function s:ErlangUpdateCache(...)
+    echo a:000
+    
+    for mod_name in a:000 
+        if has_key(s:modules_cache, mod_name)
+            call remove(s:modules_cache, mod_name)
+        endif
+    endfor
+
+    " delete the old cache file
+    call delete(s:erlang_complete_cache_file)
+
+    " write a new one
+    for key in keys(s:modules_cache)
+        call s:WriteCache(key)
+    endfor
+
+endfunction
+
+command -nargs=+ ErlangUpdate silent call s:ErlangUpdateCache(<f-args>)
