@@ -109,7 +109,8 @@ function s:ErlangFindExternalFunc(module, base)
 		return []
 	endif
 
-	let functions = system(s:erlang_complete_file . ' ' . a:module)
+	let functions = system("escript.exe " . s:erlang_complete_file . ' ' . a:module)
+	" let functions = system(s:erlang_complete_file . ' ' . a:module)
 	for function_spec in split(functions, '\n')
 		if match(function_spec, a:base) == 0
 			let function_name = matchstr(function_spec, a:base . '\w*')
@@ -163,6 +164,10 @@ function s:ErlangFindLocalFunc(base)
 		endif
 		let lnum = s:ErlangFindNextNonBlank(lnum)
 	endwhile
+
+	" Always check BIF and Module
+	call s:ErlangFindModule(a:base)
+	call s:ErlangFindBIF(a:base)
 
 	return []
 endfunction

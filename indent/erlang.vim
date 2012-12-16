@@ -28,7 +28,8 @@ endif
 
 execute 'silent !mkfifo' s:in_fifo
 execute 'silent !mkfifo' s:out_fifo
-execute 'silent !' . s:erlang_indent_file s:out_fifo s:in_fifo '&'
+" execute 'silent !' . s:erlang_indent_file s:out_fifo s:in_fifo '&'
+execute 'silent !' . 'escript.exe ' . s:erlang_indent_file s:out_fifo s:in_fifo '&'
 
 autocmd VimLeave * call <SID>StopIndenter()
 
